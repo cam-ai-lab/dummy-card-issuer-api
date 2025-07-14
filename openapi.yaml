@@ -28,11 +28,11 @@ paths:
         - name: accountId
           in: path
           required: true
-          description: Credit card account identifier in format XXXX-XXXX-XXXX-XXXX
+          description: Credit card account identifier (15 digits starting with 00)
           schema:
             type: string
-            pattern: '^[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{4}$'
-            example: "4532-1234-5678-9012"
+            pattern: '^00[0-9]{13}$'
+            example: "001234567890123"
       responses:
         '200':
           description: Credit card account details retrieved successfully
@@ -44,7 +44,7 @@ paths:
                 example1:
                   summary: Sample credit card account
                   value:
-                    accountId: "4532-1234-5678-9012"
+                    accountId: "001234567890123"
                     totalBalance: 1250.75
                     membershipRewardPoints: 15420
                     paymentDueDate: "2025-08-15"
@@ -93,16 +93,16 @@ components:
         - membershipRewardPoints
         - paymentDueDate
       example:
-        accountId: "4532-1234-5678-9012"
+        accountId: "001234567890123"
         totalBalance: 1250.75
         membershipRewardPoints: 15420
         paymentDueDate: "2025-08-15"
       properties:
         accountId:
           type: string
-          description: Credit card account identifier
-          pattern: '^[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{4}$'
-          example: "4532-1234-5678-9012"
+          description: Credit card account identifier (15 digits starting with 00)
+          pattern: '^00[0-9]{13}$'
+          example: "001234567890123"
         totalBalance:
           type: number
           format: float

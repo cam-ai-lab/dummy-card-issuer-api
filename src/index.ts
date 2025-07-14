@@ -2,30 +2,25 @@ import fastify from 'fastify';
 import cors from '@fastify/cors';
 import swagger from '@fastify/swagger';
 import swaggerUI from '@fastify/swagger-ui';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import yaml from 'js-yaml';
 
 const server = fastify({ logger: true });
+
+// Load OpenAPI specification from external file
+const openApiSpec = yaml.load(
+  readFileSync(join(__dirname, '..', 'openapi.yaml'), 'utf8')
+) as object;
 
 // Register CORS
 server.register(cors, {
   origin: true,
 });
 
-// Register Swagger
+// Register Swagger with external OpenAPI spec
 server.register(swagger, {
-  openapi: {
-    openapi: '3.0.0',
-    info: {
-      title: 'Credit Card Issuer API',
-      description: 'API for managing credit card accounts',
-      version: '1.0.0',
-    },
-    servers: [
-      {
-        url: 'http://localhost:3000',
-        description: 'Development server',
-      },
-    ],
-  },
+  openapi: openApiSpec,
 });
 
 // Register Swagger UI
@@ -76,103 +71,28 @@ const mockAccounts: Record<string, CreditCardAccount> = {
 };
 
 // Routes
-server.get(
-  '/credit-cards/:accountId',
-  {
-    schema: {
-      description: 'Get credit card account details',
-      tags: ['Credit Cards'],
-      params: {
-        type: 'object',
-        properties: {
-          accountId: {
-            type: 'string',
-            description: 'Credit card account identifier',
-            pattern: '^00[0-9]{13}$',
-          },
-        },
-        required: ['accountId'],
-      },
-      response: {
-        200: {
-          description: 'Credit card account details',
-          type: 'object',
-          properties: {
-            accountId: {
-              type: 'string',
-              description: 'Credit card account identifier',
-            },
-            totalBalance: {
-              type: 'number',
-              description: 'Current total balance on the account',
-              minimum: 0,
-            },
-            membershipRewardPoints: {
-              type: 'integer',
-              description: 'Available membership reward points',
-              minimum: 0,
-            },
-            paymentDueDate: {
-              type: 'string',
-              format: 'date',
-              description: 'Next payment due date',
-            },
-          },
-          required: ['accountId', 'totalBalance', 'membershipRewardPoints', 'paymentDueDate'],
-        },
-        404: {
-          description: 'Account not found',
-          type: 'object',
-          properties: {
-            error: { type: 'string' },
-            message: { type: 'string' },
-          },
-        },
-      },
-    },
-  },
-  async (request, reply) => {
-    const { accountId } = request.params as { accountId: string };
+server.get('/credit-cards/:accountId', async (request, reply) => {
+  const { accountId } = request.params as { accountId: string };
 
-    const account = mockAccounts[accountId];
+  const account = mockAccounts[accountId];
 
-    if (!account) {
-      return reply.code(404).send({
-        error: 'Not Found',
-        message: 'Credit card account not found',
-      });
-    }
+  if (!account) {
+    return reply.code(404).send({
+      error: 'Not Found',
+      message: 'Credit card account not found',
+    });
+  }
 
-    return account;
-  },
-);
+  return account;
+});
 
 // Health check endpoint
-server.get(
-  '/health',
-  {
-    schema: {
-      description: 'Health check endpoint',
-      tags: ['Health'],
-      response: {
-        200: {
-          description: 'Service is healthy',
-          type: 'object',
-          properties: {
-            status: { type: 'string' },
-            timestamp: { type: 'string' },
-          },
-        },
-      },
-    },
-  },
-  async (_request, _reply) => {
-    return {
-      status: 'healthy',
-      timestamp: new Date().toISOString(),
-    };
-  },
-);
+server.get('/health', async (_request, _reply) => {
+  return {
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+  };
+});
 
 const start = async () => {
   try {
