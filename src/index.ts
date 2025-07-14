@@ -10,7 +10,7 @@ const server = fastify({ logger: true });
 
 // Load OpenAPI specification from external file
 const openApiSpec = yaml.load(
-  readFileSync(join(__dirname, '..', 'openapi.yaml'), 'utf8')
+  readFileSync(join(process.cwd(), 'openapi.yaml'), 'utf8'),
 ) as object;
 
 // Register CORS
