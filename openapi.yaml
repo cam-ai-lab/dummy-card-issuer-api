@@ -46,6 +46,7 @@ paths:
                   value:
                     accountId: "001234567890123"
                     totalBalance: 1250.75
+                    minimumDue: 37.52
                     membershipRewardPoints: 15420
                     paymentDueDate: "2025-08-15"
         '404':
@@ -90,11 +91,13 @@ components:
       required:
         - accountId
         - totalBalance
+        - minimumDue
         - membershipRewardPoints
         - paymentDueDate
       example:
         accountId: "001234567890123"
         totalBalance: 1250.75
+        minimumDue: 37.52
         membershipRewardPoints: 15420
         paymentDueDate: "2025-08-15"
       properties:
@@ -109,6 +112,12 @@ components:
           minimum: 0
           description: Current total balance on the account in USD
           example: 1250.75
+        minimumDue:
+          type: number
+          format: float
+          minimum: 0
+          description: Minimum payment amount due by the payment due date
+          example: 37.52
         membershipRewardPoints:
           type: integer
           minimum: 0

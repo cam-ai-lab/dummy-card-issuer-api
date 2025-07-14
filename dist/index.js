@@ -7,25 +7,16 @@ const fastify_1 = __importDefault(require("fastify"));
 const cors_1 = __importDefault(require("@fastify/cors"));
 const swagger_1 = __importDefault(require("@fastify/swagger"));
 const swagger_ui_1 = __importDefault(require("@fastify/swagger-ui"));
+const fs_1 = require("fs");
+const path_1 = require("path");
+const js_yaml_1 = __importDefault(require("js-yaml"));
 const server = (0, fastify_1.default)({ logger: true });
+const openApiSpec = js_yaml_1.default.load((0, fs_1.readFileSync)((0, path_1.join)(process.cwd(), 'openapi.yaml'), 'utf8'));
 server.register(cors_1.default, {
     origin: true,
 });
 server.register(swagger_1.default, {
-    openapi: {
-        openapi: '3.0.0',
-        info: {
-            title: 'Credit Card Issuer API',
-            description: 'API for managing credit card accounts',
-            version: '1.0.0',
-        },
-        servers: [
-            {
-                url: 'http://localhost:3000',
-                description: 'Development server',
-            },
-        ],
-    },
+    openapi: openApiSpec,
 });
 server.register(swagger_ui_1.default, {
     routePrefix: '/docs',
@@ -34,81 +25,48 @@ server.register(swagger_ui_1.default, {
         deepLinking: false,
     },
     uiHooks: {
-        onRequest: function (_request, _reply, next) { next(); },
-        preHandler: function (_request, _reply, next) { next(); },
+        onRequest: function (_request, _reply, next) {
+            next();
+        },
+        preHandler: function (_request, _reply, next) {
+            next();
+        },
     },
     staticCSP: true,
     transformStaticCSP: (header) => header,
-    transformSpecification: (swaggerObject, _request, _reply) => { return swaggerObject; },
+    transformSpecification: (swaggerObject, _request, _reply) => {
+        return swaggerObject;
+    },
     transformSpecificationClone: true,
 });
+function calculateMinimumDue(totalBalance) {
+    if (totalBalance <= 0) {
+        return 0;
+    }
+    if (totalBalance <= 25) {
+        return Math.round(totalBalance * 100) / 100;
+    }
+    const percentageAmount = totalBalance * 0.03;
+    const minimumAmount = Math.max(25, percentageAmount);
+    return Math.round(minimumAmount * 100) / 100;
+}
 const mockAccounts = {
-    '4532-1234-5678-9012': {
-        accountId: '4532-1234-5678-9012',
+    '001234567890123': {
+        accountId: '001234567890123',
         totalBalance: 1250.75,
+        minimumDue: calculateMinimumDue(1250.75),
         membershipRewardPoints: 15420,
         paymentDueDate: '2025-08-15',
     },
-    '5555-6666-7777-8888': {
-        accountId: '5555-6666-7777-8888',
+    '005555666677778': {
+        accountId: '005555666677778',
         totalBalance: 2847.33,
+        minimumDue: calculateMinimumDue(2847.33),
         membershipRewardPoints: 28750,
         paymentDueDate: '2025-08-22',
     },
 };
-server.get('/credit-cards/:accountId', {
-    schema: {
-        description: 'Get credit card account details',
-        tags: ['Credit Cards'],
-        params: {
-            type: 'object',
-            properties: {
-                accountId: {
-                    type: 'string',
-                    description: 'Credit card account identifier',
-                    pattern: '^[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{4}$',
-                },
-            },
-            required: ['accountId'],
-        },
-        response: {
-            200: {
-                description: 'Credit card account details',
-                type: 'object',
-                properties: {
-                    accountId: {
-                        type: 'string',
-                        description: 'Credit card account identifier',
-                    },
-                    totalBalance: {
-                        type: 'number',
-                        description: 'Current total balance on the account',
-                        minimum: 0,
-                    },
-                    membershipRewardPoints: {
-                        type: 'integer',
-                        description: 'Available membership reward points',
-                        minimum: 0,
-                    },
-                    paymentDueDate: {
-                        type: 'string',
-                        format: 'date',
-                        description: 'Next payment due date',
-                    },
-                },
-                required: ['accountId', 'totalBalance', 'membershipRewardPoints', 'paymentDueDate'],
-            },
-            404: {
-                description: 'Account not found',
-                type: 'object',
-                properties: {
-                    error: { type: 'string' },
-                    message: { type: 'string' },
-                },
-            },
-        },
-    },
-}, async (request, reply) => {
+server.get('/credit-cards/:accountId', async (request, reply) => {
     const { accountId } = request.params;
     const account = mockAccounts[accountId];
     if (!account) {
@@ -119,22 +77,7 @@ server.get('/credit-cards/:accountId', {
     }
     return account;
 });
-server.get('/health', {
-    schema: {
-        description: 'Health check endpoint',
-        tags: ['Health'],
-        response: {
-            200: {
-                description: 'Service is healthy',
-                type: 'object',
-                properties: {
-                    status: { type: 'string' },
-                    timestamp: { type: 'string' },
-                },
-            },
-        },
-    },
-}, async (_request, _reply) => {
+server.get('/health', async (_request, _reply) => {
     return {
         status: 'healthy',
         timestamp: new Date().toISOString(),
