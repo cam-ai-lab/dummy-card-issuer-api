@@ -1,5 +1,7 @@
 # Credit Card Issuer API
 
+[![API Quality Gates](https://github.com/cam-ai-lab/dummy-card-issuer-api/actions/workflows/quality-gates.yml/badge.svg)](https://github.com/cam-ai-lab/dummy-card-issuer-api/actions/workflows/quality-gates.yml)
+
 A Fastify-based REST API for managing credit card accounts with comprehensive API governance using Spectral linting.
 
 ## 🚀 Features
