@@ -50,8 +50,21 @@ server.register(swaggerUI, {
 interface CreditCardAccount {
   accountId: string;
   totalBalance: number;
+  minimumDue: number;
   membershipRewardPoints: number;
   paymentDueDate: string;
+}
+
+// Utility function to calculate minimum due amount
+function calculateMinimumDue(totalBalance: number): number {
+  if (totalBalance <= 0) {
+    return 0;
+  }
+  if (totalBalance <= 25) {
+    return Math.round(totalBalance * 100) / 100;
+  }
+  const calculatedMinimum = Math.max(25, totalBalance * 0.03);
+  return Math.round(calculatedMinimum * 100) / 100;
 }
 
 // Mock data
@@ -59,12 +72,14 @@ const mockAccounts: Record<string, CreditCardAccount> = {
   '001234567890123': {
     accountId: '001234567890123',
     totalBalance: 1250.75,
+    minimumDue: calculateMinimumDue(1250.75),
     membershipRewardPoints: 15420,
     paymentDueDate: '2025-08-15',
   },
   '005555666677778': {
     accountId: '005555666677778',
     totalBalance: 2847.33,
+    minimumDue: calculateMinimumDue(2847.33),
     membershipRewardPoints: 28750,
     paymentDueDate: '2025-08-22',
   },
