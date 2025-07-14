@@ -15,9 +15,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Spectral API Linting
-        uses: stoplightio/spectral-action@latest
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          file_glob: 'openapi.yaml'
-          spectral_ruleset: '.spectral.yml'
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Spectral CLI
+        run: npm install -g @stoplight/spectral-cli
+
+      - name: Debug - Check files
+        run: |
+          echo "=== Files in workspace ==="
+          ls -la
+          echo "=== Spectral ruleset preview ==="
+          head -20 .spectral.yml
+          echo "=== OpenAPI file preview ==="
+          head -30 openapi.yaml
+
+      - name: Run Spectral Linting
+        run: spectral lint openapi.yaml --ruleset .spectral.yml --fail-severity error
