@@ -61,14 +61,14 @@ interface CreditCardAccount {
 
 // Mock data
 const mockAccounts: Record<string, CreditCardAccount> = {
-  '4532-1234-5678-9012': {
-    accountId: '4532-1234-5678-9012',
+  '001234567890123': {
+    accountId: '001234567890123',
     totalBalance: 1250.75,
     membershipRewardPoints: 15420,
     paymentDueDate: '2025-08-15',
   },
-  '5555-6666-7777-8888': {
-    accountId: '5555-6666-7777-8888',
+  '005555666677778': {
+    accountId: '005555666677778',
     totalBalance: 2847.33,
     membershipRewardPoints: 28750,
     paymentDueDate: '2025-08-22',
@@ -88,7 +88,7 @@ server.get(
           accountId: {
             type: 'string',
             description: 'Credit card account identifier',
-            pattern: '^[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{4}$',
+            pattern: '^00[0-9]{13}$',
           },
         },
         required: ['accountId'],
