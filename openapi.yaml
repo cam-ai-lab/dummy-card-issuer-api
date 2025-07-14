@@ -15,7 +15,7 @@ servers:
     description: Development server
 
 paths:
-  /credit-cards/{accountId}:
+  /credit-cards/{account_id}:
     get:
       summary: Get credit card account details
       description: Retrieve detailed information about a specific credit card account
@@ -23,7 +23,7 @@ paths:
       tags:
         - Credit Cards
       parameters:
-        - name: accountId
+        - name: account_id
           in: path
           required: true
           description: Credit card account identifier
@@ -51,7 +51,7 @@ components:
       type: object
       description: Credit card account information including balance, rewards, and payment details
       required:
-        - accountId
+        - account_id
         - totalBalance
         - membershipRewardPoints
         - paymentDueDate
