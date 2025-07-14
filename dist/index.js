@@ -11,7 +11,7 @@ const fs_1 = require("fs");
 const path_1 = require("path");
 const js_yaml_1 = __importDefault(require("js-yaml"));
 const server = (0, fastify_1.default)({ logger: true });
-const openApiSpec = js_yaml_1.default.load((0, fs_1.readFileSync)((0, path_1.join)(__dirname, '..', 'openapi.yaml'), 'utf8'));
+const openApiSpec = js_yaml_1.default.load((0, fs_1.readFileSync)((0, path_1.join)(process.cwd(), 'openapi.yaml'), 'utf8'));
 server.register(cors_1.default, {
     origin: true,
 });
@@ -39,16 +39,29 @@ server.register(swagger_ui_1.default, {
     },
     transformSpecificationClone: true,
 });
+function calculateMinimumDue(totalBalance) {
+    if (totalBalance <= 0) {
+        return 0;
+    }
+    if (totalBalance <= 25) {
+        return Math.round(totalBalance * 100) / 100;
+    }
+    const percentageAmount = totalBalance * 0.03;
+    const minimumAmount = Math.max(25, percentageAmount);
+    return Math.round(minimumAmount * 100) / 100;
+}
 const mockAccounts = {
     '001234567890123': {
         accountId: '001234567890123',
         totalBalance: 1250.75,
+        minimumDue: calculateMinimumDue(1250.75),
         membershipRewardPoints: 15420,
         paymentDueDate: '2025-08-15',
     },
     '005555666677778': {
         accountId: '005555666677778',
         totalBalance: 2847.33,
+        minimumDue: calculateMinimumDue(2847.33),
         membershipRewardPoints: 28750,
         paymentDueDate: '2025-08-22',
     },
