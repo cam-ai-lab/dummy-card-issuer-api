@@ -1,0 +1,193 @@
+extends: ["spectral:oas", "spectral:asyncapi"]
+rules:
+  # Enforce camelCase for property names
+  property-names-camel-case:
+    description: Property names should be camelCase
+    message: "Property names should be camelCase: {{property}}"
+    given: "$.components.schemas[*].properties[*]~"
+    severity: error
+    then:
+      function: pattern
+      functionOptions:
+        match: "^[a-z][a-zA-Z0-9]*$"
+
+  # Enforce camelCase for schema names
+  schema-names-camel-case:
+    description: Schema names should be PascalCase
+    message: "Schema names should be PascalCase: {{property}}"
+    given: "$.components.schemas[*]~"
+    severity: error
+    then:
+      function: pattern
+      functionOptions:
+        match: "^[A-Z][a-zA-Z0-9]*$"
+
+  # Enforce camelCase for operationId
+  operation-id-camel-case:
+    description: OperationId should be camelCase
+    message: "OperationId should be camelCase: {{value}}"
+    given: "$.paths[*][*].operationId"
+    severity: error
+    then:
+      function: pattern
+      functionOptions:
+        match: "^[a-z][a-zA-Z0-9]*$"
+
+  # Enforce kebab-case for path parameters
+  path-params-kebab-case:
+    description: Path parameters should be camelCase
+    message: "Path parameter should be camelCase: {{value}}"
+    given: "$.paths[*].parameters[?(@.in == 'path')].name"
+    severity: error
+    then:
+      function: pattern
+      functionOptions:
+        match: "^[a-z][a-zA-Z0-9]*$"
+
+  # Require descriptions for all schemas
+  schema-description:
+    description: All schemas should have descriptions
+    message: "Schema is missing description"
+    given: "$.components.schemas[*]"
+    severity: warn
+    then:
+      field: description
+      function: truthy
+
+  # Require descriptions for all properties
+  property-description:
+    description: All properties should have descriptions
+    message: "Property {{property}} is missing description"
+    given: "$.components.schemas[*].properties[*]"
+    severity: warn
+    then:
+      field: description
+      function: truthy
+
+  # Require examples for all schemas
+  schema-examples:
+    description: All schemas should have examples
+    message: "Schema should have examples"
+    given: "$.components.schemas[*]"
+    severity: info
+    then:
+      field: example
+      function: truthy
+
+  # Require 2xx responses
+  operation-2xx-response:
+    description: Operations should have at least one 2xx response
+    message: "Operation should have at least one 2xx response"
+    given: "$.paths[*][*].responses"
+    severity: error
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          type: object
+          patternProperties:
+            "^2[0-9][0-9]$":
+              type: object
+
+  # Require 4xx responses for operations that can fail
+  operation-4xx-response:
+    description: Operations should have 4xx responses for error cases
+    message: "Operation should have 4xx responses for error cases"
+    given: "$.paths[*][get,post,put,patch,delete].responses"
+    severity: warn
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          type: object
+          patternProperties:
+            "^4[0-9][0-9]$":
+              type: object
+
+  # Require tags for all operations
+  operation-tags:
+    description: All operations should have tags
+    message: "Operation should have tags"
+    given: "$.paths[*][*]"
+    severity: error
+    then:
+      field: tags
+      function: truthy
+
+  # Limit tag count per operation
+  operation-tag-defined:
+    description: Operation tags should be defined in global tags
+    message: "Operation tag '{{value}}' is not defined in global tags"
+    given: "$.paths[*][*].tags[*]"
+    severity: warn
+    then:
+      function: enumeration
+      functionOptions:
+        values:
+          - "Credit Cards"
+          - "Health"
+
+  # Require operationId for all operations
+  operation-operationId:
+    description: All operations should have operationId
+    message: "Operation should have operationId"
+    given: "$.paths[*][*]"
+    severity: error
+    then:
+      field: operationId
+      function: truthy
+
+  # Require summary for all operations
+  operation-summary:
+    description: All operations should have summary
+    message: "Operation should have summary"
+    given: "$.paths[*][*]"
+    severity: error
+    then:
+      field: summary
+      function: truthy
+
+  # Require description for all operations
+  operation-description:
+    description: All operations should have description
+    message: "Operation should have description"
+    given: "$.paths[*][*]"
+    severity: warn
+    then:
+      field: description
+      function: truthy
+
+  # Enforce consistent error response schema
+  consistent-error-response:
+    description: Error responses should use consistent schema
+    message: "4xx and 5xx responses should use ErrorResponse schema"
+    given: "$.paths[*][*].responses[?(@property.match(/^[45][0-9][0-9]$/))].content.application/json.schema"
+    severity: error
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          type: object
+          properties:
+            $ref:
+              enum: ["#/components/schemas/ErrorResponse"]
+
+  # Require contact information
+  info-contact:
+    description: API should have contact information
+    message: "API should have contact information"
+    given: "$.info"
+    severity: warn
+    then:
+      field: contact
+      function: truthy
+
+  # Require license information
+  info-license:
+    description: API should have license information
+    message: "API should have license information"
+    given: "$.info"
+    severity: info
+    then:
+      field: license
+      function: truthy
