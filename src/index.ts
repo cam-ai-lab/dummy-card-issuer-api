@@ -53,7 +53,7 @@ server.register(swaggerUI, {
 
 // Types
 interface CreditCardAccount {
-  accountId: string;
+  account_id: string;
   totalBalance: number;
   membershipRewardPoints: number;
   paymentDueDate: string;
@@ -62,13 +62,13 @@ interface CreditCardAccount {
 // Mock data
 const mockAccounts: Record<string, CreditCardAccount> = {
   '001234567890123': {
-    accountId: '001234567890123',
+    account_id: '001234567890123',
     totalBalance: 1250.75,
     membershipRewardPoints: 15420,
     paymentDueDate: '2025-08-15',
   },
   '005555666677778': {
-    accountId: '005555666677778',
+    account_id: '005555666677778',
     totalBalance: 2847.33,
     membershipRewardPoints: 28750,
     paymentDueDate: '2025-08-22',
@@ -77,7 +77,7 @@ const mockAccounts: Record<string, CreditCardAccount> = {
 
 // Routes
 server.get(
-  '/credit-cards/:accountId',
+  '/credit-cards/:account_id',
   {
     schema: {
       description: 'Get credit card account details',
@@ -85,20 +85,20 @@ server.get(
       params: {
         type: 'object',
         properties: {
-          accountId: {
+          account_id: {
             type: 'string',
             description: 'Credit card account identifier',
             pattern: '^00[0-9]{13}$',
           },
         },
-        required: ['accountId'],
+        required: ['account_id'],
       },
       response: {
         200: {
           description: 'Credit card account details',
           type: 'object',
           properties: {
-            accountId: {
+            account_id: {
               type: 'string',
               description: 'Credit card account identifier',
             },
@@ -118,7 +118,7 @@ server.get(
               description: 'Next payment due date',
             },
           },
-          required: ['accountId', 'totalBalance', 'membershipRewardPoints', 'paymentDueDate'],
+          required: ['account_id', 'totalBalance', 'membershipRewardPoints', 'paymentDueDate'],
         },
         404: {
           description: 'Account not found',
@@ -132,9 +132,9 @@ server.get(
     },
   },
   async (request, reply) => {
-    const { accountId } = request.params as { accountId: string };
+    const { account_id } = request.params as { account_id: string };
 
-    const account = mockAccounts[accountId];
+    const account = mockAccounts[account_id];
 
     if (!account) {
       return reply.code(404).send({

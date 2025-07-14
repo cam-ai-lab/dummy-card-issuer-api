@@ -13,26 +13,24 @@ info:
 servers:
   - url: http://localhost:3000
     description: Development server
-  - url: https://api.cardissuer.com
-    description: Production server
 
 paths:
-  /credit-cards/{accountId}:
+  /credit-cards/{account_id}:
     get:
       summary: Get credit card account details
-      description: Retrieve detailed information about a specific credit card account including balance, reward points, and payment due date
+      description: Retrieve detailed information about a specific credit card account
       operationId: getCreditCardAccount
       tags:
         - Credit Cards
       parameters:
-        - name: accountId
+        - name: account_id
           in: path
           required: true
-          description: Credit card account identifier in format XXXX-XXXX-XXXX-XXXX
+          description: Credit card account identifier
           schema:
             type: string
-            pattern: '^[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{4}$'
-            example: "4532-1234-5678-9012"
+            pattern: '^00[0-9]{13}$'
+            example: "001234567890123"
       responses:
         '200':
           description: Credit card account details retrieved successfully
@@ -40,47 +38,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreditCardAccount'
-              examples:
-                example1:
-                  summary: Sample credit card account
-                  value:
-                    accountId: "4532-1234-5678-9012"
-                    totalBalance: 1250.75
-                    membershipRewardPoints: 15420
-                    paymentDueDate: "2025-08-15"
         '404':
           description: Credit card account not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                notFound:
-                  summary: Account not found
-                  value:
-                    error: "Not Found"
-                    message: "Credit card account not found"
-        '400':
-          description: Invalid account ID format
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /health:
-    get:
-      summary: Health check endpoint
-      description: Check if the API service is running and healthy
-      operationId: healthCheck
-      tags:
-        - Health
-      responses:
-        '200':
-          description: Service is healthy
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HealthResponse'
 
 components:
   schemas:
@@ -88,36 +51,36 @@ components:
       type: object
       description: Credit card account information including balance, rewards, and payment details
       required:
-        - accountId
+        - account_id
         - totalBalance
         - membershipRewardPoints
         - paymentDueDate
       example:
-        accountId: "4532-1234-5678-9012"
-        totalBalance: 1250.75
-        membershipRewardPoints: 15420
-        paymentDueDate: "2025-08-15"
+        account_id: "001234567890123"
+        total_balance: 1250.75
+        membership_reward_points: 15420
+        payment_due_date: "2025-08-15"
       properties:
-        accountId:
+        # VIOLATION: These should be camelCase, not snake_case
+        account_id:
           type: string
           description: Credit card account identifier
-          pattern: '^[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{4}$'
-          example: "4532-1234-5678-9012"
-        totalBalance:
+          example: "001234567890123"
+        total_balance:
           type: number
           format: float
           minimum: 0
           description: Current total balance on the account in USD
           example: 1250.75
-        membershipRewardPoints:
+        membership_reward_points:
           type: integer
           minimum: 0
           description: Available membership reward points
           example: 15420
-        paymentDueDate:
+        payment_due_date:
           type: string
           format: date
-          description: Next payment due date in ISO 8601 format (YYYY-MM-DD)
+          description: Next payment due date in ISO 8601 format
           example: "2025-08-15"
 
     ErrorResponse:
@@ -139,29 +102,6 @@ components:
           description: Human-readable error message
           example: "Credit card account not found"
 
-    HealthResponse:
-      type: object
-      description: Health check response indicating service status
-      required:
-        - status
-        - timestamp
-      example:
-        status: "healthy"
-        timestamp: "2025-07-14T10:30:00.000Z"
-      properties:
-        status:
-          type: string
-          enum: [healthy, unhealthy]
-          description: Current health status of the service
-          example: "healthy"
-        timestamp:
-          type: string
-          format: date-time
-          description: Timestamp when health check was performed
-          example: "2025-07-14T10:30:00.000Z"
-
 tags:
   - name: Credit Cards
     description: Operations related to credit card accounts
-  - name: Health
-    description: Service health and monitoring endpoints
