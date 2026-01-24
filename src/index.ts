@@ -70,8 +70,45 @@ const mockAccounts: Record<string, CreditCardAccount> = {
   },
 };
 
+// Validation schemas
+const accountIdParamSchema = {
+  type: 'object',
+  required: ['accountId'],
+  properties: {
+    accountId: {
+      type: 'string',
+      pattern: '^00[0-9]{13}$',
+      description: 'Credit card account identifier (15 digits starting with 00)',
+    },
+  },
+} as const;
+
 // Routes
-server.get('/credit-cards/:accountId', async (request, reply) => {
+server.get('/credit-cards/:accountId', {
+  schema: {
+    params: accountIdParamSchema,
+    response: {
+      200: {
+        type: 'object',
+        required: ['accountId', 'totalBalance', 'membershipRewardPoints', 'paymentDueDate'],
+        properties: {
+          accountId: { type: 'string', pattern: '^00[0-9]{13}$' },
+          totalBalance: { type: 'number', minimum: 0 },
+          membershipRewardPoints: { type: 'integer', minimum: 0 },
+          paymentDueDate: { type: 'string', format: 'date' },
+        },
+      },
+      404: {
+        type: 'object',
+        required: ['error', 'message'],
+        properties: {
+          error: { type: 'string' },
+          message: { type: 'string' },
+        },
+      },
+    },
+  },
+}, async (request, reply) => {
   const { accountId } = request.params as { accountId: string };
 
   const account = mockAccounts[accountId];
